@@ -1,18 +1,29 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 
-public class Bullet : MonoBehaviour {
+public class Bullet : NetworkBehaviour {
+    [SyncVar(hook = "changeLayer")]
+    public int ownerid = 0;
 
-	void OnCollisionEnter(Collision s)
+    public int damage = 100;
+	void OnCollisionEnter2D(Collision2D s)
     {
-        var h = s.gameObject.GetComponent<health>();
-
-
-        if(h != null)
+        Debug.Log(s.gameObject.name);
+        SuperPlayerCtrl sp = s.gameObject.GetComponent<SuperPlayerCtrl>();
+        if(sp != null && sp.IDCODE == ownerid)
+            return;
+        if(sp != null)
         {
-            h.TakeD(10);
+            sp.TakeD(damage);
         }
-
         Destroy(gameObject);
+    }
+
+    private void changeLayer(int ownerid)
+    {
+        this.ownerid = ownerid;
+        if (GameManager.Instance.ID != ownerid)
+            this.gameObject.layer = 11;
     }
 }

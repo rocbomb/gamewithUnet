@@ -11,7 +11,7 @@ public class JoyStickerController : MonoBehaviour, IDragHandler, IPointerUpHandl
 	//store
 	public Vector3 InputDirection{set; get;}
 
-
+    public bool isClick;
 	// Use this for initialization
 	void Start () {
 		bgImg = GetComponent<Image> ();
@@ -42,7 +42,8 @@ public class JoyStickerController : MonoBehaviour, IDragHandler, IPointerUpHandl
 	public virtual void OnPointerDown(PointerEventData ped)
 	{
 		OnDrag (ped);
-	}
+        isClick = true;
+    }
 
 
 
@@ -51,7 +52,9 @@ public class JoyStickerController : MonoBehaviour, IDragHandler, IPointerUpHandl
 		//put the joysticker back
 		InputDirection = Vector3.zero;
 		joystickerImg.rectTransform.anchoredPosition = Vector3.zero;
-	}
+        isClick = false;
+
+    }
 
 
 	// Update is called once per frame
