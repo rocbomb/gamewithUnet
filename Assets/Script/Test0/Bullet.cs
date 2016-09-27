@@ -15,7 +15,7 @@ public class Bullet : NetworkBehaviour {
             return;
         if(sp != null)
         {
-            sp.TakeD(damage);
+            sp.TakeD(damage,s.transform);
         }
         Destroy(gameObject);
     }

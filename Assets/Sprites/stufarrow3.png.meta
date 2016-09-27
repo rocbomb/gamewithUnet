@@ -50,9 +50,9 @@ TextureImporter:
   buildTargetSettings:
   - buildTarget: iPhone
     maxTextureSize: 2048
-    textureFormat: 4
+    textureFormat: -1
     compressionQuality: 50
-    allowsAlphaSplitting: 0
+    allowsAlphaSplitting: 1
   - buildTarget: Android
     maxTextureSize: 2048
     textureFormat: -1
@@ -61,7 +61,7 @@ TextureImporter:
   spriteSheet:
     sprites: []
     outline: []
-  spritePackingTag: LobbyShop
+  spritePackingTag: play
   userData: 
-  assetBundleName: scene_lobby_shop
+  assetBundleName: 
   assetBundleVariant: 

@@ -42,10 +42,13 @@ public class MenuControl : MonoBehaviour {
         {
             if (ip.AddressFamily == AddressFamily.InterNetwork)
             {
+                if (ip.ToString().StartsWith("192.") || ip.ToString().StartsWith("10.") || ip.ToString().StartsWith("127."))
+                    return ip.ToString();
+
                 localIP = ip.ToString();
-                break;
             }
         }
+
         return localIP;
     }
 

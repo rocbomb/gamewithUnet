@@ -25,7 +25,10 @@ public class SuperPlayerCtrl : NetworkBehaviour {
     hpShow hpshow;
 
     public GameObject uilive;
-    // Use this for initialization
+
+    private float mp = 1000;
+    private MpShow mpshow;
+
     void Awake () {
 		GetComponent<SpriteRenderer>().color = Color.red;
         rigibody = GetComponent<Rigidbody2D>();
@@ -36,6 +39,9 @@ public class SuperPlayerCtrl : NetworkBehaviour {
         this.name = "enemy";
         hpshow = this.transform.Find("hp").GetComponent<hpShow>();
         uilive = GameObject.Find("rightlive");
+
+        mpshow = this.transform.Find("mp").GetComponent<MpShow>();
+        mpshow.gameObject.SetActive(false);
     }
 
     public override void OnStartLocalPlayer()
@@ -55,6 +61,7 @@ public class SuperPlayerCtrl : NetworkBehaviour {
             this.transform.localPosition = Constant.LeftSpawnPos;
 
         uilive = GameObject.Find("leftlive");
+        mpshow.gameObject.SetActive(true);
     }
 
     void Start()
@@ -66,6 +73,7 @@ public class SuperPlayerCtrl : NetworkBehaviour {
     } 
 
     public GameObject bulletPref;
+    public GameObject gravestonePref;
     public Transform bulletSpawn;
 
 
@@ -96,6 +104,8 @@ public class SuperPlayerCtrl : NetworkBehaviour {
 
 
 
+    
+
     public void OnChangePos(NetworkMessage netMsg)
     {
         ScoreMessage msg = netMsg.ReadMessage<ScoreMessage>();
@@ -111,7 +121,6 @@ public class SuperPlayerCtrl : NetworkBehaviour {
             transform.localScale = new Vector3(transform.localScale.y, transform.localScale.y, transform.localScale.y);
         else
             transform.localScale = new Vector3(-transform.localScale.y, transform.localScale.y, transform.localScale.y);
-
     }
 
     void Update () {
@@ -149,6 +158,9 @@ public class SuperPlayerCtrl : NetworkBehaviour {
             DownKey = false;
         }
 
+        if (mp < 0)
+            UpKey = false;
+
         if ((LeftKey ||Input.GetKey(KeyCode.A)) && rigibody.velocity.x > -MaxSpeedY)
         {
             faceDirect = false;
@@ -169,6 +181,9 @@ public class SuperPlayerCtrl : NetworkBehaviour {
 
         if ((UpKey || Input.GetKey(KeyCode.W)) && rigibody.velocity.y < MaxSpeedY)
         {
+
+            mp -= Time.deltaTime * 1000;
+
             if (rigibody.velocity.y < 0)
             {
                 rigibody.velocity = new Vector2(rigibody.velocity.x, 0);
@@ -190,10 +205,21 @@ public class SuperPlayerCtrl : NetworkBehaviour {
 
         //射击逻辑
         fireUpdate();
+        if(addmpcd + 1f < Time.time)
+        {
+            addmpcd = Time.time;
+            mp += 201;
+            if (mp > 1000)
+                mp = 1000;
+        }
+        if(mp == 1000)
+            addmpcd = Time.time;
 
+        mpshow.setMp(mp);
         //if (Input.GetKeyDown(KeyCode.Space))
         //    CmdChangeFace(false);
     }
+    float addmpcd = 0;
 
     [Command]
     private void CmdChangeFace(int id,bool lv)
@@ -257,14 +283,17 @@ public class SuperPlayerCtrl : NetworkBehaviour {
     }
 
 
-    public void TakeD(int damage)
+    public void TakeD(int damage, Transform t)
     {
         if (!isServer)
             return;
-
+        Debug.Log(hp+ "   " +damage);
         hp -= damage;
         if (hp <= 0)
         {
+            GameObject gravestone = (GameObject)Instantiate(gravestonePref, t.position, t.rotation);
+            NetworkServer.Spawn(gravestone);
+            Destroy(gravestone, 5);
             hp = Constant.MaxHp;
             lives--;
             //RpcRespawn();
@@ -279,9 +308,20 @@ public class SuperPlayerCtrl : NetworkBehaviour {
 
     public void changeLive(int live)
     {
-        this.lives = live;
+        if (this.lives != live)
+            this.lives = live;
+        else
+            return;
+
         if (lives == 0)
             this.transform.localPosition = new Vector3(10000,10000,0);
+        else
+        {
+            float x = Random.Range(-8f,8f);
+            float y = Random.Range(-5f,5f);
+            if(isLocalPlayer)
+                this.transform.localPosition = new Vector3(x, y, 0);
+        }
 
         for(int i=lives; i<5;i++)
         {
