@@ -4,6 +4,7 @@ using System.Collections;
 using UnityEngine.UI;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.NetworkInformation;
 
 public class GameCrtl : MonoBehaviour {
     public Button exit;
@@ -113,13 +114,24 @@ public class GameCrtl : MonoBehaviour {
     {
         IPHostEntry host;
         string localIP = "";
-        host = Dns.GetHostEntry(Dns.GetHostName());
-        foreach (IPAddress ip in host.AddressList)
+        NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
+
+        foreach (NetworkInterface adapter in adapters)
         {
-            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            if (adapter.Supports(NetworkInterfaceComponent.IPv4))
             {
-                localIP = ip.ToString();
-                break;
+                UnicastIPAddressInformationCollection uniCast = adapter.GetIPProperties().UnicastAddresses;
+                if (uniCast.Count > 0)
+                {
+                    foreach (UnicastIPAddressInformation uni in uniCast)
+                    {
+                        //得到IPv4的地址。 AddressFamily.InterNetwork指的是IPv4
+                        if (uni.Address.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            localIP = uni.Address.ToString();
+                        }
+                    }
+                }
             }
         }
         return localIP;
